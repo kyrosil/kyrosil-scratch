@@ -24,49 +24,33 @@
       <option value="en">English</option>
     </select>
     <div id="authSection">
-      <input id="username" type="text" placeholder="Kullanıcı Adı" required>
-      <input id="email" type="email" placeholder="E-posta" required>
-      <button id="verifyButton">Doğrula ve Oyna</button>
+      <input id="username" type="text" placeholder="EU Portal/Instagram Kullanıcı Adı" required>
+      <input id="socialHandle" type="text" placeholder="KyrosilRewards Sosyal Medya (@kullanıcı)" required>
+      <input id="email" type="email" placeholder="E-posta (opsiyonel)">
+      <button id="playButton">Oyna</button>
     </div>
     <canvas id="scratchCard" width="300" height="150" class="hidden"></canvas>
     <p id="result" class="hidden"></p>
     <button id="copyButton" class="hidden">Kodu Kopyala</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAusvzfOOlNv59lp3bsRZSBSWmMQLP_6MI",
-      authDomain: "kazi-kazan-440b3.firebaseapp.com",
-      projectId: "kazi-kazan-440b3",
-      storageBucket: "kazi-kazan-440b3.firebasestorage.app",
-      messagingSenderId: "109370236960",
-      appId: "1:109370236960:web:2347632b5f78944ca55c45",
-      measurementId: "G-G6XBL57NZ3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
+  <script>
     // Ödül listesini çek
     let prizes = [];
-    try {
-      const response = await fetch('/kyrosil-scratch/prizes.json');
-      const data = await response.json();
-      prizes = data.prizes;
-      // %50 PAS ekle
-      for (let i = 0; i < 135; i++) {
-        prizes.push({ code: "PAS", description_tr: "PAS", description_en: "PAS" });
-      }
-      console.log("Ödüller yüklendi:", prizes.length);
-    } catch (error) {
-      console.error("Ödül listesi yüklenemedi:", error);
-      alert("Ödül listesi yüklenemedi!");
-    }
+    fetch('/kyrosil-secure/prizes.json')
+      .then(response => response.json())
+      .then(data => {
+        prizes = data.prizes;
+        // %50 PAS ekle
+        for (let i = 0; i < 135; i++) {
+          prizes.push({ code: "PAS", description_tr: "PAS", description_en: "PAS" });
+        }
+        console.log("Ödüller yüklendi:", prizes.length);
+      })
+      .catch(error => {
+        console.error("Ödül listesi yüklenemedi:", error);
+        alert("Ödül listesi yüklenemedi!");
+      });
 
     let language = "tr"; // Varsayılan dil Türkçe
     document.getElementById("languageToggle").addEventListener("change", (e) => {
@@ -80,134 +64,93 @@
       if (result.dataset.code) {
         const prize = prizes.find(p => p.code === result.dataset.code);
         if (prize) {
-          result.innerText = `${prize.code} - ${prize[language === "tr" ? "description_tr" : "description_en"]}`;
+          const username = document.getElementById("username").value;
+          const socialHandle = document.getElementById("socialHandle").value;
+          result.innerText = language === "tr" ?
+            `Kullanıcı: ${username}\nSosyal Medya: ${socialHandle}\nÖdül: ${prize.code} - ${prize.description_tr}` :
+            `User: ${username}\nSocial Media: ${socialHandle}\nPrize: ${prize.code} - ${prize.description_en}`;
           console.log("Ödül güncellendi:", result.innerText);
         }
       }
     }
 
-    async function sendVerification() {
+    // Oyna butonu
+    document.getElementById("playButton").addEventListener("click", () => {
       const username = document.getElementById("username").value;
-      const email = document.getElementById("email").value;
+      const socialHandle = document.getElementById("socialHandle").value;
 
-      if (!username || !email) {
-        alert(language === "tr" ? "Lütfen kullanıcı adı ve e-posta girin!" : "Please enter username and email!");
+      if (!username || !socialHandle) {
+        alert(language === "tr" ? "Lütfen kullanıcı adı ve sosyal medya hesabı girin!" : "Please enter username and social media handle!");
         return;
       }
 
-      // Kullanıcı daha önce katılmış mı?
-      const userRef = doc(db, "users", email);
-      const userDoc = await getDoc(userRef);
-      if (userDoc.exists()) {
-        alert(language === "tr" ? "Bu e-posta ile zaten katıldınız!" : "You have already participated with this email!");
-        return;
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("scratchCard").classList.remove("hidden");
+
+      // Kazı kazan animasyonu
+      const canvas = document.getElementById("scratchCard");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ccc";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let isDrawing = false;
+      canvas.addEventListener("mousedown", () => isDrawing = true);
+      canvas.addEventListener("mouseup", () => isDrawing = false);
+      canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("touchstart", () => isDrawing = true);
+      canvas.addEventListener("touchend", () => isDrawing = false);
+      canvas.addEventListener("touchmove", draw);
+
+      function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Kazıma %50'den fazla ise ödül göster
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const totalPixels = imageData.length / 4;
+        const transparentPixels = imageData.filter((_, i) => i % 4 === 3 && imageData[i] === 0).length;
+        if (transparentPixels / totalPixels > 0.5) {
+          showPrize();
+        }
       }
 
-      // E-posta doğrulama linki gönder
-      const actionCodeSettings = {
-        url: window.location.href,
-        handleCodeInApp: true
-      };
-      try {
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        alert(language === "tr" ? "Doğrulama linki e-postanıza gönderildi!" : "Verification link sent to your email!");
-      } catch (error) {
-        console.error("Doğrulama hatası:", error);
-        alert(language === "tr" ? "Hata: " + error.message : "Error: " + error.message);
+      function showPrize() {
+        canvas.classList.add("hidden");
+        const result = document.getElementById("result");
+        const copyButton = document.getElementById("copyButton");
+
+        if (prizes.length === 0) {
+          result.innerText = language === "tr" ? "Tüm ödüller dağıtıldı!" : "All prizes have been distributed!";
+          return;
+        }
+
+        // Rastgele ödül seç
+        const randomIndex = Math.floor(Math.random() * prizes.length);
+        const selectedPrize = prizes[randomIndex];
+
+        result.dataset.code = selectedPrize.code;
+        const username = document.getElementById("username").value;
+        const socialHandle = document.getElementById("socialHandle").value;
+        result.innerText = language === "tr" ?
+          `Kullanıcı: ${username}\nSosyal Medya: ${socialHandle}\nÖdül: ${selectedPrize.code} - ${selectedPrize.description_tr}` :
+          `User: ${username}\nSocial Media: ${socialHandle}\nPrize: ${selectedPrize.code} - ${selectedPrize.description_en}`;
+        result.classList.remove("hidden");
+
+        if (selectedPrize.code !== "PAS") {
+          copyButton.classList.remove("hidden");
+          copyButton.onclick = () => {
+            navigator.clipboard.writeText(`/scratch ${selectedPrize.code}`);
+            alert(language === "tr" ? "Kod kopyalandı!" : "Code copied!");
+          };
+        }
       }
-    }
-
-    // Doğrula ve Oyna butonuna olay dinleyici ekle
-    document.getElementById("verifyButton").addEventListener("click", sendVerification);
-
-    // Doğrulama linkiyle giriş
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      const email = window.prompt(language === "tr" ? "Doğrulama için e-posta adresinizi girin:" : "Enter your email for verification:");
-      if (email) {
-        signInWithEmailLink(auth, email, window.location.href)
-          .then(async (result) => {
-            const userRef = doc(db, "users", email);
-            const userDoc = await getDoc(userRef);
-            if (userDoc.exists()) {
-              alert(language === "tr" ? "Bu e-posta ile zaten katıldınız!" : "You have already participated with this email!");
-              return;
-            }
-
-            // Kullanıcıyı kaydet
-            await setDoc(userRef, { username: document.getElementById("username").value, timestamp: new Date() });
-            document.getElementById("authSection").classList.add("hidden");
-            document.getElementById("scratchCard").classList.remove("hidden");
-
-            // Kazı kazan animasyonu
-            const canvas = document.getElementById("scratchCard");
-            const ctx = canvas.getContext("2d");
-            ctx.fillStyle = "#ccc";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            let isDrawing = false;
-            canvas.addEventListener("mousedown", () => isDrawing = true);
-            canvas.addEventListener("mouseup", () => isDrawing = false);
-            canvas.addEventListener("mousemove", draw);
-            canvas.addEventListener("touchstart", () => isDrawing = true);
-            canvas.addEventListener("touchend", () => isDrawing = false);
-            canvas.addEventListener("touchmove", draw);
-
-            function draw(e) {
-              if (!isDrawing) return;
-              const rect = canvas.getBoundingClientRect();
-              const x = (e.clientX || e.touches[0].clientX) - rect.left;
-              const y = (e.clientY || e.touches[0].clientY) - rect.top;
-              ctx.globalCompositeOperation = "destination-out";
-              ctx.beginPath();
-              ctx.arc(x, y, 20, 0, Math.PI * 2);
-              ctx.fill();
-
-              // Kazıma %50'den fazla ise ödül göster
-              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-              const totalPixels = imageData.length / 4;
-              const transparentPixels = imageData.filter((_, i) => i % 4 === 3 && imageData[i] === 0).length;
-              if (transparentPixels / totalPixels > 0.5) {
-                showPrize();
-              }
-            }
-
-            async function showPrize() {
-              canvas.classList.add("hidden");
-              const result = document.getElementById("result");
-              const copyButton = document.getElementById("copyButton");
-
-              // Kullanılmamış ödülleri al
-              const usedPrizes = (await getDocs(collection(db, "used_prizes"))).docs.map(doc => doc.id);
-              const availablePrizes = prizes.filter(p => !usedPrizes.includes(p.code));
-              if (availablePrizes.length === 0) {
-                result.innerText = language === "tr" ? "Tüm ödüller dağıtıldı!" : "All prizes have been distributed!";
-                return;
-              }
-
-              // Rastgele ödül seç
-              const randomIndex = Math.floor(Math.random() * availablePrizes.length);
-              const selectedPrize = availablePrizes[randomIndex];
-
-              // Ödülü kaydet
-              await setDoc(doc(db, "used_prizes", selectedPrize.code), { timestamp: new Date() });
-              result.dataset.code = selectedPrize.code;
-              result.innerText = `${selectedPrize.code} - ${selectedPrize[language === "tr" ? "description_tr" : "description_en"]}`;
-              result.classList.remove("hidden");
-              if (selectedPrize.code !== "PAS") {
-                copyButton.classList.remove("hidden");
-                copyButton.onclick = () => {
-                  navigator.clipboard.writeText(`/scratch ${selectedPrize.code}`);
-                  alert(language === "tr" ? "Kod kopyalandı!" : "Code copied!");
-                };
-              }
-            }
-          })
-          .catch(error => {
-            console.error("Giriş hatası:", error);
-            alert(language === "tr" ? "Hata: " + error.message : "Error: " + error.message);
-          });
-      }
-    }
+    });
   </script>
 </body>
 </html>
