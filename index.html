@@ -55,7 +55,7 @@
     // Ödül listesini çek
     let prizes = [];
     try {
-      const response = await fetch('/prizes.json');
+      const response = await fetch('/kyrosil-scratch/prizes.json');
       const data = await response.json();
       prizes = data.prizes;
       // %50 PAS ekle
@@ -72,6 +72,7 @@
     document.getElementById("languageToggle").addEventListener("change", (e) => {
       language = e.target.value;
       updateResultText();
+      console.log("Dil değiştirildi:", language);
     });
 
     function updateResultText() {
@@ -80,6 +81,7 @@
         const prize = prizes.find(p => p.code === result.dataset.code);
         if (prize) {
           result.innerText = `${prize.code} - ${prize[language === "tr" ? "description_tr" : "description_en"]}`;
+          console.log("Ödül güncellendi:", result.innerText);
         }
       }
     }
