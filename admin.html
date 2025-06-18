@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kyros Spins - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       background: linear-gradient(to bottom, #1a202c, #2d3748);
@@ -79,8 +80,11 @@
     <div class="bg-gray-700 p-6 rounded-lg mb-6">
       <h2 class="text-2xl font-bold mb-4">Generate Promo Code</h2>
       <input id="promo-amount" type="number" placeholder="Coin Amount">
+      <input id="promo-usage-limit" type="number" placeholder="Usage Limit">
       <button onclick="generatePromoCode()">Generate</button>
       <p id="promo-result" class="mt-2"></p>
+      <h3 class="mt-4">Promo Code Usage</h3>
+      <div id="promo-list" class="mt-2"></div>
     </div>
     <div class="bg-gray-700 p-6 rounded-lg">
       <h2 class="text-2xl font-bold mb-4">Manage Market</h2>
@@ -93,10 +97,11 @@
   </div>
 
   <script>
+    const supabase = Supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
     const adminPassword = 'kyros123';
     let isAdmin = false;
 
-    function loginAdmin() {
+    async function loginAdmin() {
       const password = document.getElementById('admin-password').value;
       if (password === adminPassword) {
         isAdmin = true;
@@ -104,6 +109,20 @@
         document.getElementById('admin-panel').classList.remove('hidden');
         populateUserSelect();
         populateMarketList();
+        populatePromoList();
+        // Canlı senkronizasyon için abonelik
+        supabase
+          .channel('users')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => populateUserSelect())
+          .subscribe();
+        supabase
+          .channel('market_items')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'market_items' }, () => populateMarketList())
+          .subscribe();
+        supabase
+          .channel('promo_codes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'promo_codes' }, () => populatePromoList())
+          .subscribe();
       } else {
         document.getElementById('admin-password').value = '';
         alert('Wrong password!');
@@ -116,43 +135,85 @@
       document.getElementById('admin-login').style.display = 'flex';
     }
 
-    function populateUserSelect() {
+    async function populateUserSelect() {
       const select = document.getElementById('user-select');
-      let users = JSON.parse(localStorage.getItem('users')) || {};
+      const { data: users, error } = await supabase.from('users').select('id, username, balance');
+      if (error) return alert('Error: ' + error.message);
       select.innerHTML = '<option value="">Select User</option>';
-      Object.keys(users).forEach(username => {
+      users.forEach(user => {
         const option = document.createElement('option');
-        option.value = username;
-        option.textContent = username;
+        option.value = user.id;
+        option.textContent = `${user.username} (${user.balance} coins)`;
         select.appendChild(option);
       });
     }
 
-    function addCoins() {
-      const username = document.getElementById('user-select').value;
+    async function addCoins() {
+      const userId = document.getElementById('user-select').value;
       const amount = parseInt(document.getElementById('add-coins').value);
-      if (username && amount > 0) {
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        users[username].balance = (users[username].balance || 0) + amount;
-        localStorage.setItem('users', JSON.stringify(users));
-        alert(`Added ${amount} coins to ${username}!`);
+      if (userId && amount > 0) {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('balance')
+          .eq('id', userId)
+          .single();
+        if (error) return alert('Error: ' + error.message);
+        await supabase
+          .from('users')
+          .update({ balance: user.balance + amount })
+          .eq('id', userId);
+        alert(`Added ${amount} coins to user!`);
+        document.getElementById('add-coins').value = '';
+      } else {
+        alert('Select a user and enter a valid amount!');
       }
     }
 
-    function generatePromoCode() {
+    async function generatePromoCode() {
       const amount = parseInt(document.getElementById('promo-amount').value);
-      if (amount > 0) {
+      const usageLimit = parseInt(document.getElementById('promo-usage-limit').value);
+      if (amount > 0 && usageLimit > 0) {
         const code = 'PROMO-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-        let promos = JSON.parse(localStorage.getItem('promos')) || {};
-        promos[code] = amount;
-        localStorage.setItem('promos', JSON.stringify(promos));
-        document.getElementById('promo-result').textContent = `Promo Code: ${code} (${amount} coins)`;
+        const { error } = await supabase.from('promo_codes').insert({
+          code,
+          amount,
+          usage_limit,
+          used_by: []
+        });
+        if (error) return alert('Error: ' + error.message);
+        document.getElementById('promo-result').textContent = `Promo Code: ${code} (${amount} coins, ${usageLimit} uses)`;
+        populatePromoList();
+      } else {
+        alert('Enter valid amount and usage limit!');
       }
     }
 
-    function populateMarketList() {
+    async function populatePromoList() {
+      const promoList = document.getElementById('promo-list');
+      const { data: promos, error } = await supabase.from('promo_codes').select('code, amount, usage_limit, used_by');
+      if (error) return alert('Error: ' + error.message);
+      promoList.innerHTML = '';
+      promos.forEach(promo => {
+        const div = document.createElement('div');
+        div.className = 'flex justify-between bg-gray-600 p-2 rounded mb-2';
+        div.innerHTML = `
+          ${promo.code} - ${promo.amount} coins, ${promo.used_by.length}/${promo.usage_limit} used
+          <button onclick="deletePromoCode('${promo.code}')" class="bg-red-500 px-2 py-1 rounded">Delete</button>
+        `;
+        promoList.appendChild(div);
+      });
+    }
+
+    async function deletePromoCode(code) {
+      const { error } = await supabase.from('promo_codes').delete().eq('code', code);
+      if (error) return alert('Error: ' + error.message);
+      populatePromoList();
+    }
+
+    async function populateMarketList() {
       const marketList = document.getElementById('market-list');
-      let marketItems = JSON.parse(localStorage.getItem('marketItems')) || [];
+      const { data: marketItems, error } = await supabase.from('market_items').select('id, name, price');
+      if (error) return alert('Error: ' + error.message);
       marketList.innerHTML = '';
       marketItems.forEach(item => {
         const div = document.createElement('div');
@@ -165,29 +226,31 @@
       });
     }
 
-    function addMarketItem() {
+    async function addMarketItem() {
       const name = document.getElementById('item-name').value;
       const price = parseInt(document.getElementById('item-price').value);
       if (name && price > 0) {
-        let marketItems = JSON.parse(localStorage.getItem('marketItems')) || [];
-        marketItems.push({ id: name.toLowerCase().replace(/\s/g, ''), name, price });
-        localStorage.setItem('marketItems', JSON.stringify(marketItems));
+        const id = name.toLowerCase().replace(/\s/g, '');
+        const { error } = await supabase.from('market_items').insert({ id, name, price });
+        if (error) return alert('Error: ' + error.message);
         populateMarketList();
         document.getElementById('item-name').value = '';
         document.getElementById('item-price').value = '';
+      } else {
+        alert('Enter valid name and price!');
       }
     }
 
-    function deleteMarketItem(itemId) {
-      let marketItems = JSON.parse(localStorage.getItem('marketItems')) || [];
-      marketItems = marketItems.filter(item => item.id !== itemId);
-      localStorage.setItem('marketItems', JSON.stringify(marketItems));
+    async function deleteMarketItem(itemId) {
+      const { error } = await supabase.from('market_items').delete().eq('id', itemId);
+      if (error) return alert('Error: ' + error.message);
       populateMarketList();
     }
 
     // Initialize
     populateUserSelect();
     populateMarketList();
+    populatePromoList();
   </script>
 </body>
 </html>
