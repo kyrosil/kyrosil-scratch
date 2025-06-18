@@ -1,156 +1,479 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kazı Kazan Etkinliği</title>
+  <title>Kyros Spins</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    input, button { margin: 10px; padding: 10px; font-size: 16px; width: 200px; }
-    canvas { border: 1px solid black; background-color: #ccc; cursor: pointer; }
-    #result { font-size: 18px; margin-top: 20px; }
-    .hidden { display: none; }
-    #copyButton { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    #copyButton:hover { background-color: #45a049; }
-    #languageToggle { margin: 10px; }
+    body {
+      background: linear-gradient(to bottom, #1a202c, #2d3748);
+      color: #e2e8f0;
+      font-family: 'Arial', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 120px);
+      gap: 8px;
+      background: #2d3748;
+      padding: 15px;
+      border-radius: 12px;
+      border: 3px solid #ed8936;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .slot-cell {
+      width: 120px;
+      height: 120px;
+      background: #4a5568;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .slot-cell img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    .slot-cell.winning {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #ed8936;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tab-button {
+      background: #4a5568;
+      color: #e2e8f0;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .tab-button.active {
+      background: #ed8936;
+      color: white;
+    }
+    .tab-button:hover {
+      background: #dd6b20;
+    }
+    button {
+      background: #ed8936;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #dd6b20;
+    }
+    button:disabled {
+      background: #718096;
+      cursor: not-allowed;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #2d3748;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    input {
+      background: #4a5568;
+      color: #e2e8f0;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      margin: 10px 0;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Kazı Kazan Etkinliği</h1>
-    <select id="languageToggle">
-      <option value="tr">Türkçe</option>
-      <option value="en">English</option>
-    </select>
-    <div id="authSection">
-      <input id="username" type="text" placeholder="EU Portal/Instagram Kullanıcı Adı" required>
-      <input id="socialHandle" type="text" placeholder="KyrosilRewards Sosyal Medya (@kullanıcı)" required>
-      <input id="email" type="email" placeholder="E-posta (opsiyonel)">
-      <button id="playButton">Oyna</button>
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold mb-4">Kyros Spins</h2>
+      <input id="username" type="text" placeholder="Username">
+      <input id="password" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <button onclick="showRegister()">Register</button>
     </div>
-    <canvas id="scratchCard" width="300" height="150" class="hidden"></canvas>
-    <p id="result" class="hidden"></p>
-    <button id="copyButton" class="hidden">Kodu Kopyala</button>
+  </div>
+
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold mb-4">Register</h2>
+      <input id="reg-username" type="text" placeholder="Username">
+      <input id="reg-password" type="password" placeholder="Password">
+      <button onclick="register()">Register</button>
+      <button onclick="showLogin()">Back to Login</button>
+    </div>
+  </div>
+
+  <div id="game-container" class="container mx-auto p-6 hidden">
+    <h1 class="text-5xl font-bold mb-6 text-center">Kyros Spins</h1>
+    <p class="text-lg mb-4">Welcome, <span id="username-display"></span>!</p>
+    <p class="text-lg mb-4">Balance: <span id="balance">1000</span> coins</p>
+    <div class="flex justify-center mb-4">
+      <button class="tab-button active" onclick="showTab('game')">Game</button>
+      <button class="tab-button" onclick="showTab('market')">Market</button>
+      <button class="tab-button" onclick="showTab('paytable')">Paytable</button>
+    </div>
+
+    <div id="game" class="tab-content active">
+      <div class="mb-4 text-center">
+        <p>Bet: <span id="bet-amount">1</span> coin</p>
+      </div>
+      <div class="slot-grid" id="slot-grid">
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+      </div>
+      <div class="flex justify-center gap-4 mt-6">
+        <button onclick="decreaseBet()">- Bet</button>
+        <button onclick="increaseBet()">+ Bet</button>
+        <button id="spin-btn" onclick="spin()">Spin</button>
+        <button id="lucky-spin-btn" onclick="luckySpin()">Lucky Spin (10x)</button>
+      </div>
+      <p id="result" class="mt-6 text-xl text-center"></p>
+    </div>
+
+    <div id="market" class="tab-content">
+      <div class="market-items grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="market-items"></div>
+      <div class="mt-4">
+        <button onclick="showPromoModal()">Use Promo Code</button>
+      </div>
+    </div>
+
+    <div id="paytable" class="tab-content">
+      <h2 class="text-2xl font-bold mb-4">Paytable</h2>
+      <div class="bg-gray-700 p-4 rounded-lg">
+        <p class="mb-2">3 Kyrosil: <span class="text-orange-400">1000x</span></p>
+        <p class="mb-2">3 Sponsor1: <span class="text-orange-400">500x</span></p>
+        <p class="mb-2">3 Sponsor2: <span class="text-orange-400">250x</span></p>
+        <p class="mb-2">3 Sponsor3: <span class="text-orange-400">100x</span></p>
+        <p class="mb-2">3 Sponsor4: <span class="text-orange-400">50x</span></p>
+      </div>
+    </div>
+
+    <div id="promo-modal" class="modal">
+      <div class="modal-content">
+        <h2 class="text-2xl font-bold mb-4">Enter Promo Code</h2>
+        <input id="promo-code" type="text" placeholder="Promo Code">
+        <button onclick="redeemPromo()">Redeem</button>
+        <button onclick="closePromoModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Ödül listesini çek
-    let prizes = [];
-    fetch('/kyrosil-secure/prizes.json')
-      .then(response => response.json())
-      .then(data => {
-        prizes = data.prizes;
-        // %50 PAS ekle
-        for (let i = 0; i < 135; i++) {
-          prizes.push({ code: "PAS", description_tr: "PAS", description_en: "PAS" });
-        }
-        console.log("Ödüller yüklendi:", prizes.length);
-      })
-      .catch(error => {
-        console.error("Ödül listesi yüklenemedi:", error);
-        alert("Ödül listesi yüklenemedi!");
+    let currentUser = null;
+    let balance = 1000;
+    let betAmount = 1;
+    let spinCount = 0;
+    let isSpinning = false;
+
+    const symbols = [
+      { id: 'kyrosil', src: 'kyrosil.png', weight: 5, multiplier: 1000 },
+      { id: 'sponsor1', src: 'sponsor1.png', weight: 10, multiplier: 500 },
+      { id: 'sponsor2', src: 'sponsor2.png', weight: 15, multiplier: 250 },
+      { id: 'sponsor3', src: 'sponsor3.png', weight: 20, multiplier: 100 },
+      { id: 'sponsor4', src: 'sponsor4.png', weight: 25, multiplier: 50 },
+      { id: 'empty', src: 'empty.png', weight: 50, multiplier: 0 },
+    ];
+
+    const luckySpinWeights = [
+      { id: 'kyrosil', src: 'kyrosil.png', weight: 20, multiplier: 1000 },
+      { id: 'sponsor1', src: 'sponsor1.png', weight: 15, multiplier: 500 },
+      { id: 'sponsor2', src: 'sponsor2.png', weight: 20, multiplier: 250 },
+      { id: 'sponsor3', src: 'sponsor3.png', weight: 25, multiplier: 100 },
+      { id: 'sponsor4', src: 'sponsor4.png', weight: 30, multiplier: 50 },
+      { id: 'empty', src: 'empty.png', weight: 10, multiplier: 0 },
+    ];
+
+    let marketItems = JSON.parse(localStorage.getItem('marketItems')) || [
+      { id: 'theme1', name: 'Dark Theme', price: 500 },
+      { id: 'theme2', name: 'Light Theme', price: 500 },
+      { id: 'luckySpin', name: 'Extra Lucky Spin', price: 100 },
+      { id: 'coinPack', name: '1000 Coins', price: 200 },
+      { id: 'vipTheme', name: 'VIP Theme', price: 1000 },
+    ];
+
+    const grid = Array(9).fill(null);
+    const slotCells = document.querySelectorAll('.slot-cell img');
+    const balanceDisplay = document.getElementById('balance');
+    const betDisplay = document.getElementById('bet-amount');
+    const resultDisplay = document.getElementById('result');
+    const usernameDisplay = document.getElementById('username-display');
+    const spinButton = document.getElementById('spin-btn');
+    const luckySpinButton = document.getElementById('lucky-spin-btn');
+    const marketContainer = document.getElementById('market-items');
+
+    function updateUI() {
+      balanceDisplay.textContent = balance;
+      betDisplay.textContent = betAmount;
+      if (currentUser) {
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        users[currentUser].balance = balance;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+      spinButton.disabled = isSpinning || balance < betAmount;
+      luckySpinButton.disabled = isSpinning || balance < betAmount * 10;
+    }
+
+    function weightedRandom(weights) {
+      const totalWeight = weights.reduce((sum, s) => sum + s.weight, 0);
+      let rand = Math.random() * totalWeight;
+      for (let symbol of weights) {
+        rand -= symbol.weight;
+        if (rand <= 0) return symbol;
+      }
+      return weights[weights.length - 1];
+    }
+
+    function spin(isLucky = false) {
+      if (isSpinning) return;
+      const cost = isLucky ? betAmount * 10 : betAmount;
+      if (balance < cost) {
+        resultDisplay.textContent = 'Not enough coins! Try the market!';
+        return;
+      }
+      balance -= cost;
+      spinCount++;
+      isSpinning = true;
+      updateUI();
+
+      const weights = isLucky ? luckySpinWeights : symbols;
+      gsap.to(slotCells, {
+        y: 100,
+        duration: 0.5,
+        stagger: 0.1,
+        onComplete: () => {
+          grid.forEach((_, i) => {
+            const symbol = weightedRandom(weights);
+            grid[i] = symbol;
+            slotCells[i].src = symbol.src;
+            slotCells[i].alt = symbol.id;
+            slotCells[i].parentElement.classList.remove('winning');
+          });
+          gsap.fromTo(slotCells, { y: -100 }, { y: 0, duration: 0.5, stagger: 0.1 });
+          checkWin();
+          checkGift();
+          isSpinning = false;
+          updateUI();
+        },
       });
+    }
 
-    let language = "tr"; // Varsayılan dil Türkçe
-    document.getElementById("languageToggle").addEventListener("change", (e) => {
-      language = e.target.value;
-      updateResultText();
-      console.log("Dil değiştirildi:", language);
-    });
+    function luckySpin() {
+      spin(true);
+    }
 
-    function updateResultText() {
-      const result = document.getElementById("result");
-      if (result.dataset.code) {
-        const prize = prizes.find(p => p.code === result.dataset.code);
-        if (prize) {
-          const username = document.getElementById("username").value;
-          const socialHandle = document.getElementById("socialHandle").value;
-          result.innerText = language === "tr" ?
-            `Kullanıcı: ${username}\nSosyal Medya: ${socialHandle}\nÖdül: ${prize.code} - ${prize.description_tr}` :
-            `User: ${username}\nSocial Media: ${socialHandle}\nPrize: ${prize.code} - ${prize.description_en}`;
-          console.log("Ödül güncellendi:", result.innerText);
+    function checkWin() {
+      const lines = [
+        [0, 1, 2], // Row 1
+        [3, 4, 5], // Row 2
+        [6, 7, 8], // Row 3
+      ];
+      let winnings = 0;
+      let winningLines = [];
+      for (let line of lines) {
+        const [a, b, c] = line;
+        if (grid[a]?.id === grid[b]?.id && grid[b]?.id === grid[c]?.id && grid[a].multiplier > 0) {
+          winnings += betAmount * grid[a].multiplier;
+          winningLines.push(line);
+        }
+      }
+      if (winnings > 0) {
+        balance += winnings;
+        winningLines.forEach(line => {
+          line.forEach(cell => {
+            gsap.to(slotCells[cell].parentElement, {
+              scale: 1.1,
+              duration: 0.3,
+              yoyo: true,
+              repeat: 3,
+              onStart: () => slotCells[cell].parentElement.classList.add('winning'),
+            });
+          });
+        });
+        resultDisplay.textContent = `Jackpot! You won ${winnings} coins! 🎉`;
+      } else {
+        resultDisplay.textContent = 'Spin again for glory!';
+      }
+      updateUI();
+    }
+
+    function checkGift() {
+      if (spinCount % 10 === 0) {
+        const gift = Math.random() < 0.5 ? 10 : 1;
+        if (gift === 1) {
+          resultDisplay.textContent = 'Surprise! Free Lucky Spin! 🎁';
+          luckySpin();
+        } else {
+          balance += gift;
+          resultDisplay.textContent = `Gift! You got ${gift} coins! 🎁`;
+          updateUI();
         }
       }
     }
 
-    // Oyna butonu
-    document.getElementById("playButton").addEventListener("click", () => {
-      const username = document.getElementById("username").value;
-      const socialHandle = document.getElementById("socialHandle").value;
+    function increaseBet() {
+      if (betAmount < 100) betAmount += 1;
+      updateUI();
+    }
 
-      if (!username || !socialHandle) {
-        alert(language === "tr" ? "Lütfen kullanıcı adı ve sosyal medya hesabı girin!" : "Please enter username and social media handle!");
+    function decreaseBet() {
+      if (betAmount > 1) betAmount -= 1;
+      updateUI();
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
+    }
+
+    function populateMarket() {
+      marketContainer.innerHTML = '';
+      marketItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'market-item bg-gray-700 p-4 rounded-lg';
+        div.innerHTML = `
+          <h3 class="font-bold">${item.name}</h3>
+          <p>${item.price} coins</p>
+          <button onclick="buyItem('${item.id}', ${item.price})">Buy</button>
+        `;
+        marketContainer.appendChild(div);
+      });
+    }
+
+    function buyItem(itemId, price) {
+      if (balance < price) {
+        resultDisplay.textContent = 'Not enough coins! Spin to earn more!';
         return;
       }
-
-      document.getElementById("authSection").classList.add("hidden");
-      document.getElementById("scratchCard").classList.remove("hidden");
-
-      // Kazı kazan animasyonu
-      const canvas = document.getElementById("scratchCard");
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#ccc";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      let isDrawing = false;
-      canvas.addEventListener("mousedown", () => isDrawing = true);
-      canvas.addEventListener("mouseup", () => isDrawing = false);
-      canvas.addEventListener("mousemove", draw);
-      canvas.addEventListener("touchstart", () => isDrawing = true);
-      canvas.addEventListener("touchend", () => isDrawing = false);
-      canvas.addEventListener("touchmove", draw);
-
-      function draw(e) {
-        if (!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX || e.touches[0].clientX) - rect.left;
-        const y = (e.clientY || e.touches[0].clientY) - rect.top;
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.beginPath();
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Kazıma %50'den fazla ise ödül göster
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        const totalPixels = imageData.length / 4;
-        const transparentPixels = imageData.filter((_, i) => i % 4 === 3 && imageData[i] === 0).length;
-        if (transparentPixels / totalPixels > 0.5) {
-          showPrize();
-        }
+      balance -= price;
+      resultDisplay.textContent = `Purchased ${itemId}! Awesome choice!`;
+      updateUI();
+      if (itemId === 'luckySpin') {
+        showTab('game');
+        luckySpin();
+      } else if (itemId.includes('theme')) {
+        document.body.style.background = itemId === 'theme1' ? 'linear-gradient(to bottom, #1a202c, #2d3748)' :
+                                        itemId === 'theme2' ? 'linear-gradient(to bottom, #f7fafc, #e2e8f0)' :
+                                        'linear-gradient(to bottom, #4a5568, #2d3748)';
+      } else if (itemId === 'coinPack') {
+        balance += 1000;
+        resultDisplay.textContent = 'Coin Pack purchased! +1000 coins! 🚀';
+        updateUI();
       }
+    }
 
-      function showPrize() {
-        canvas.classList.add("hidden");
-        const result = document.getElementById("result");
-        const copyButton = document.getElementById("copyButton");
+    function showPromoModal() {
+      document.getElementById('promo-modal').style.display = 'flex';
+    }
 
-        if (prizes.length === 0) {
-          result.innerText = language === "tr" ? "Tüm ödüller dağıtıldı!" : "All prizes have been distributed!";
-          return;
-        }
+    function closePromoModal() {
+      document.getElementById('promo-modal').style.display = 'none';
+    }
 
-        // Rastgele ödül seç
-        const randomIndex = Math.floor(Math.random() * prizes.length);
-        const selectedPrize = prizes[randomIndex];
-
-        result.dataset.code = selectedPrize.code;
-        const username = document.getElementById("username").value;
-        const socialHandle = document.getElementById("socialHandle").value;
-        result.innerText = language === "tr" ?
-          `Kullanıcı: ${username}\nSosyal Medya: ${socialHandle}\nÖdül: ${selectedPrize.code} - ${selectedPrize.description_tr}` :
-          `User: ${username}\nSocial Media: ${socialHandle}\nPrize: ${selectedPrize.code} - ${selectedPrize.description_en}`;
-        result.classList.remove("hidden");
-
-        if (selectedPrize.code !== "PAS") {
-          copyButton.classList.remove("hidden");
-          copyButton.onclick = () => {
-            navigator.clipboard.writeText(`/scratch ${selectedPrize.code}`);
-            alert(language === "tr" ? "Kod kopyalandı!" : "Code copied!");
-          };
-        }
+    function redeemPromo() {
+      const code = document.getElementById('promo-code').value;
+      let promos = JSON.parse(localStorage.getItem('promos')) || {};
+      if (promos[code]) {
+        balance += promos[code];
+        delete promos[code];
+        localStorage.setItem('promos', JSON.stringify(promos));
+        resultDisplay.textContent = `Redeemed ${code} for ${promos[code]} coins! 🎉`;
+        updateUI();
+      } else {
+        resultDisplay.textContent = 'Invalid promo code!';
       }
-    });
+      closePromoModal();
+    }
+
+    function showLogin() {
+      document.getElementById('register-modal').style.display = 'none';
+      document.getElementById('login-modal').style.display = 'flex';
+    }
+
+    function showRegister() {
+      document.getElementById('login-modal').style.display = 'none';
+      document.getElementById('register-modal').style.display = 'flex';
+    }
+
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      if (users[username] && users[username].password === password) {
+        currentUser = username;
+        balance = users[username].balance || 1000;
+        usernameDisplay.textContent = username;
+        document.getElementById('login-modal').style.display = 'none';
+        document.getElementById('game-container').classList.remove('hidden');
+        updateUI();
+        populateMarket();
+        if (localStorage.getItem('triggerLuckySpin') === 'true') {
+          localStorage.removeItem('triggerLuckySpin');
+          showTab('game');
+          luckySpin();
+        }
+      } else {
+        resultDisplay.textContent = 'Invalid username or password!';
+      }
+    }
+
+    function register() {
+      const username = document.getElementById('reg-username').value;
+      const password = document.getElementById('reg-password').value;
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      if (users[username]) {
+        resultDisplay.textContent = 'Username already exists!';
+      } else {
+        users[username] = { password, balance: 1000 };
+        localStorage.setItem('users', JSON.stringify(users));
+        resultDisplay.textContent = 'Registered! Welcome gift: 1000 coins! 🎁';
+        showLogin();
+      }
+    }
+
+    // Initialize
+    document.getElementById('login-modal').style.display = 'flex';
+    updateUI();
   </script>
 </body>
 </html>
