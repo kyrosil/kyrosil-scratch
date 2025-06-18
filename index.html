@@ -6,6 +6,7 @@
   <title>Kyros Spins</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       background: linear-gradient(to bottom, #1a202c, #2d3748);
@@ -198,6 +199,7 @@
   </div>
 
   <script>
+    const supabase = Supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
     let currentUser = null;
     let balance = 1000;
     let betAmount = 1;
@@ -222,14 +224,6 @@
       { id: 'empty', src: 'empty.png', weight: 10, multiplier: 0 },
     ];
 
-    let marketItems = JSON.parse(localStorage.getItem('marketItems')) || [
-      { id: 'theme1', name: 'Dark Theme', price: 500 },
-      { id: 'theme2', name: 'Light Theme', price: 500 },
-      { id: 'luckySpin', name: 'Extra Lucky Spin', price: 100 },
-      { id: 'coinPack', name: '1000 Coins', price: 200 },
-      { id: 'vipTheme', name: 'VIP Theme', price: 1000 },
-    ];
-
     const grid = Array(9).fill(null);
     const slotCells = document.querySelectorAll('.slot-cell img');
     const balanceDisplay = document.getElementById('balance');
@@ -240,13 +234,15 @@
     const luckySpinButton = document.getElementById('lucky-spin-btn');
     const marketContainer = document.getElementById('market-items');
 
-    function updateUI() {
+    async function updateUI() {
       balanceDisplay.textContent = balance;
       betDisplay.textContent = betAmount;
       if (currentUser) {
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        users[currentUser].balance = balance;
-        localStorage.setItem('users', JSON.stringify(users));
+        const { error } = await supabase
+          .from('users')
+          .update({ balance })
+          .eq('id', currentUser.id);
+        if (error) console.error('Error updating balance:', error);
       }
       spinButton.disabled = isSpinning || balance < betAmount;
       luckySpinButton.disabled = isSpinning || balance < betAmount * 10;
@@ -262,7 +258,7 @@
       return weights[weights.length - 1];
     }
 
-    function spin(isLucky = false) {
+    async function spin(isLucky = false) {
       if (isSpinning) return;
       const cost = isLucky ? betAmount * 10 : betAmount;
       if (balance < cost) {
@@ -279,7 +275,7 @@
         y: 100,
         duration: 0.5,
         stagger: 0.1,
-        onComplete: () => {
+        onComplete: async () => {
           grid.forEach((_, i) => {
             const symbol = weightedRandom(weights);
             grid[i] = symbol;
@@ -288,6 +284,12 @@
             slotCells[i].parentElement.classList.remove('winning');
           });
           gsap.fromTo(slotCells, { y: -100 }, { y: 0, duration: 0.5, stagger: 0.1 });
+          await supabase.from('spins').insert({
+            user_id: currentUser.id,
+            spin_type: isLucky ? 'lucky' : 'normal',
+            result: JSON.stringify(grid.map(s => s.id)),
+            timestamp: new Date()
+          });
           checkWin();
           checkGift();
           isSpinning = false;
@@ -296,15 +298,15 @@
       });
     }
 
-    function luckySpin() {
+    async function luckySpin() {
       spin(true);
     }
 
-    function checkWin() {
+    async function checkWin() {
       const lines = [
-        [0, 1, 2], // Row 1
-        [3, 4, 5], // Row 2
-        [6, 7, 8], // Row 3
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
       ];
       let winnings = 0;
       let winningLines = [];
@@ -335,7 +337,7 @@
       updateUI();
     }
 
-    function checkGift() {
+    async function checkGift() {
       if (spinCount % 10 === 0) {
         const gift = Math.random() < 0.5 ? 10 : 1;
         if (gift === 1) {
@@ -366,7 +368,9 @@
       document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
     }
 
-    function populateMarket() {
+    async function populateMarket() {
+      const { data: marketItems, error } = await supabase.from('market_items').select('id, name, price');
+      if (error) return console.error('Error fetching market items:', error);
       marketContainer.innerHTML = '';
       marketItems.forEach(item => {
         const div = document.createElement('div');
@@ -380,12 +384,18 @@
       });
     }
 
-    function buyItem(itemId, price) {
+    async function buyItem(itemId, price) {
       if (balance < price) {
         resultDisplay.textContent = 'Not enough coins! Spin to earn more!';
         return;
       }
       balance -= price;
+      await supabase.from('purchases').insert({
+        user_id: currentUser.id,
+        item_id: itemId,
+        price,
+        timestamp: new Date()
+      });
       resultDisplay.textContent = `Purchased ${itemId}! Awesome choice!`;
       updateUI();
       if (itemId === 'luckySpin') {
@@ -410,18 +420,32 @@
       document.getElementById('promo-modal').style.display = 'none';
     }
 
-    function redeemPromo() {
+    async function redeemPromo() {
       const code = document.getElementById('promo-code').value;
-      let promos = JSON.parse(localStorage.getItem('promos')) || {};
-      if (promos[code]) {
-        balance += promos[code];
-        delete promos[code];
-        localStorage.setItem('promos', JSON.stringify(promos));
-        resultDisplay.textContent = `Redeemed ${code} for ${promos[code]} coins! 🎉`;
-        updateUI();
-      } else {
+      const { data: promo, error } = await supabase
+        .from('promo_codes')
+        .select('id, amount, usage_limit, used_by')
+        .eq('code', code)
+        .single();
+      if (error || !promo) {
         resultDisplay.textContent = 'Invalid promo code!';
+        return;
       }
+      if (promo.used_by.length >= promo.usage_limit) {
+        resultDisplay.textContent = 'Promo code usage limit reached!';
+        return;
+      }
+      if (promo.used_by.includes(currentUser.id)) {
+        resultDisplay.textContent = 'You already used this promo code!';
+        return;
+      }
+      balance += promo.amount;
+      await supabase
+        .from('promo_codes')
+        .update({ used_by: [...promo.used_by, currentUser.id] })
+        .eq('id', promo.id);
+      resultDisplay.textContent = `Redeemed ${code} for ${promo.amount} coins! 🎉`;
+      updateUI();
       closePromoModal();
     }
 
@@ -435,45 +459,85 @@
       document.getElementById('register-modal').style.display = 'flex';
     }
 
-    function login() {
+    async function login() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      let users = JSON.parse(localStorage.getItem('users')) || {};
-      if (users[username] && users[username].password === password) {
-        currentUser = username;
-        balance = users[username].balance || 1000;
-        usernameDisplay.textContent = username;
-        document.getElementById('login-modal').style.display = 'none';
-        document.getElementById('game-container').classList.remove('hidden');
-        updateUI();
-        populateMarket();
-        if (localStorage.getItem('triggerLuckySpin') === 'true') {
-          localStorage.removeItem('triggerLuckySpin');
-          showTab('game');
-          luckySpin();
-        }
-      } else {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, username, password, balance')
+        .eq('username', username)
+        .single();
+      if (error || !user || user.password !== password) {
         resultDisplay.textContent = 'Invalid username or password!';
+        return;
       }
+      currentUser = { id: user.id, username: user.username };
+      balance = user.balance;
+      usernameDisplay.textContent = user.username;
+      document.getElementById('login-modal').style.display = 'none';
+      document.getElementById('game-container').classList.remove('hidden');
+      updateUI();
+      populateMarket();
+      if (localStorage.getItem('triggerLuckySpin') === 'true') {
+        localStorage.removeItem('triggerLuckySpin');
+        showTab('game');
+        luckySpin();
+      }
+      // Canlı senkronizasyon
+      supabase
+        .channel('users')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${user.id}` }, payload => {
+          balance = payload.new.balance;
+          updateUI();
+        })
+        .subscribe();
     }
 
-    function register() {
+    async function register() {
       const username = document.getElementById('reg-username').value;
       const password = document.getElementById('reg-password').value;
-      let users = JSON.parse(localStorage.getItem('users')) || {};
-      if (users[username]) {
-        resultDisplay.textContent = 'Username already exists!';
-      } else {
-        users[username] = { password, balance: 1000 };
-        localStorage.setItem('users', JSON.stringify(users));
-        resultDisplay.textContent = 'Registered! Welcome gift: 1000 coins! 🎁';
-        showLogin();
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
+      if (checkError && checkError.code !== 'PGRST116') {
+        resultDisplay.textContent = 'Error checking username!';
+        return;
       }
+      if (existingUser) {
+        resultDisplay.textContent = 'Username already exists!';
+        return;
+      }
+      const { data, error } = await supabase.from('users').insert({ username, password, balance: 1000 }).select('id, username, balance').single();
+      if (error) {
+        resultDisplay.textContent = 'Error registering!';
+        return;
+      }
+      resultDisplay.textContent = 'Registered! Welcome gift: 1000 coins! 🎁';
+      showLogin();
     }
 
     // Initialize
     document.getElementById('login-modal').style.display = 'flex';
     updateUI();
+    // Market öğelerini başlat
+    async function initMarket() {
+      const { data: marketItems, error } = await supabase.from('market_items').select('id');
+      if (error) return console.error('Error checking market items:', error);
+      if (!marketItems.length) {
+        const initialItems = [
+          { id: 'theme1', name: 'Dark Theme', price: 500 },
+          { id: 'theme2', name: 'Light Theme', price: 500 },
+          { id: 'luckySpin', name: 'Extra Lucky Spin', price: 100 },
+          { id: 'coinPack', name: '1000 Coins', price: 200 },
+          { id: 'vipTheme', name: 'VIP Theme', price: 1000 },
+        ];
+        await supabase.from('market_items').insert(initialItems);
+      }
+      populateMarket();
+    }
+    initMarket();
   </script>
 </body>
 </html>
