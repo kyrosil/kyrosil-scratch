@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kyros Spins</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- Tailwind CDN (Geliştirme için, üretimde Tailwind CLI kullan: https://tailwindcss.com/docs/installation) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -151,15 +152,15 @@
         <p>Bet: <span id="bet-amount">1</span> coin</p>
       </div>
       <div class="slot-grid" id="slot-grid">
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
+        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
       </div>
       <div class="flex justify-center gap-4 mt-6">
         <button onclick="decreaseBet()">- Bet</button>
@@ -199,7 +200,8 @@
   </div>
 
   <script>
-    const supabase = Supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
+    // Supabase başlatma
+    const supabase = window.supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
     let currentUser = null;
     let balance = 1000;
     let betAmount = 1;
@@ -207,21 +209,21 @@
     let isSpinning = false;
 
     const symbols = [
-      { id: 'kyrosil', src: 'kyrosil.png', weight: 5, multiplier: 1000 },
-      { id: 'sponsor1', src: 'sponsor1.png', weight: 10, multiplier: 500 },
-      { id: 'sponsor2', src: 'sponsor2.png', weight: 15, multiplier: 250 },
-      { id: 'sponsor3', src: 'sponsor3.png', weight: 20, multiplier: 100 },
-      { id: 'sponsor4', src: 'sponsor4.png', weight: 25, multiplier: 50 },
-      { id: 'empty', src: 'empty.png', weight: 50, multiplier: 0 },
+      { id: 'kyrosil', src: 'images/kyrosil.png', weight: 5, multiplier: 1000 },
+      { id: 'sponsor1', src: 'images/sponsor1.png', weight: 10, multiplier: 500 },
+      { id: 'sponsor2', src: 'images/sponsor2.png', weight: 15, multiplier: 250 },
+      { id: 'sponsor3', src: 'images/sponsor3.png', weight: 20, multiplier: 100 },
+      { id: 'sponsor4', src: 'images/sponsor4.png', weight: 25, multiplier: 50 },
+      { id: 'empty', src: 'images/empty.png', weight: 50, multiplier: 0 },
     ];
 
     const luckySpinWeights = [
-      { id: 'kyrosil', src: 'kyrosil.png', weight: 20, multiplier: 1000 },
-      { id: 'sponsor1', src: 'sponsor1.png', weight: 15, multiplier: 500 },
-      { id: 'sponsor2', src: 'sponsor2.png', weight: 20, multiplier: 250 },
-      { id: 'sponsor3', src: 'sponsor3.png', weight: 25, multiplier: 100 },
-      { id: 'sponsor4', src: 'sponsor4.png', weight: 30, multiplier: 50 },
-      { id: 'empty', src: 'empty.png', weight: 10, multiplier: 0 },
+      { id: 'kyrosil', src: 'images/kyrosil.png', weight: 20, multiplier: 1000 },
+      { id: 'sponsor1', src: 'images/sponsor1.png', weight: 15, multiplier: 500 },
+      { id: 'sponsor2', src: 'images/sponsor2.png', weight: 20, multiplier: 250 },
+      { id: 'sponsor3', src: 'images/sponsor3.png', weight: 25, multiplier: 100 },
+      { id: 'sponsor4', src: 'images/sponsor4.png', weight: 30, multiplier: 50 },
+      { id: 'empty', src: 'images/empty.png', weight: 10, multiplier: 0 },
     ];
 
     const grid = Array(9).fill(null);
