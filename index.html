@@ -286,12 +286,13 @@
             slotCells[i].parentElement.classList.remove('winning');
           });
           gsap.fromTo(slotCells, { y: -100 }, { y: 0, duration: 0.5, stagger: 0.1 });
-          await supabase.from('spins').insert({
+          const { error } = await supabase.from('spins').insert({
             user_id: currentUser.id,
             spin_type: isLucky ? 'lucky' : 'normal',
             result: JSON.stringify(grid.map(s => s.id)),
             timestamp: new Date()
           });
+          if (error) console.error('Error logging spin:', error);
           checkWin();
           checkGift();
           isSpinning = false;
@@ -372,7 +373,10 @@
 
     async function populateMarket() {
       const { data: marketItems, error } = await supabase.from('market_items').select('id, name, price');
-      if (error) return console.error('Error fetching market items:', error);
+      if (error) {
+        console.error('Error fetching market items:', error);
+        return;
+      }
       marketContainer.innerHTML = '';
       marketItems.forEach(item => {
         const div = document.createElement('div');
@@ -392,12 +396,13 @@
         return;
       }
       balance -= price;
-      await supabase.from('purchases').insert({
+      const { error } = await supabase.from('purchases').insert({
         user_id: currentUser.id,
         item_id: itemId,
         price,
         timestamp: new Date()
       });
+      if (error) console.error('Error logging purchase:', error);
       resultDisplay.textContent = `Purchased ${itemId}! Awesome choice!`;
       updateUI();
       if (itemId === 'luckySpin') {
@@ -430,6 +435,7 @@
         .eq('code', code)
         .single();
       if (error || !promo) {
+        console.error('Error fetching promo:', error);
         resultDisplay.textContent = 'Invalid promo code!';
         return;
       }
@@ -442,10 +448,11 @@
         return;
       }
       balance += promo.amount;
-      await supabase
+      const { error: updateError } = await supabase
         .from('promo_codes')
         .update({ used_by: [...promo.used_by, currentUser.id] })
         .eq('id', promo.id);
+      if (updateError) console.error('Error updating promo:', updateError);
       resultDisplay.textContent = `Redeemed ${code} for ${promo.amount} coins! 🎉`;
       updateUI();
       closePromoModal();
@@ -464,12 +471,18 @@
     async function login() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
+      console.log('Logging in user:', username);
       const { data: user, error } = await supabase
         .from('users')
         .select('id, username, password, balance')
         .eq('username', username)
         .single();
-      if (error || !user || user.password !== password) {
+      if (error) {
+        console.error('Login error:', error);
+        resultDisplay.textContent = 'Invalid username or password!';
+        return;
+      }
+      if (!user || user.password !== password) {
         resultDisplay.textContent = 'Invalid username or password!';
         return;
       }
@@ -498,12 +511,14 @@
     async function register() {
       const username = document.getElementById('reg-username').value;
       const password = document.getElementById('reg-password').value;
+      console.log('Registering user:', username);
       const { data: existingUser, error: checkError } = await supabase
         .from('users')
         .select('id')
         .eq('username', username)
         .single();
       if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Check error:', checkError);
         resultDisplay.textContent = 'Error checking username!';
         return;
       }
@@ -511,11 +526,17 @@
         resultDisplay.textContent = 'Username already exists!';
         return;
       }
-      const { data, error } = await supabase.from('users').insert({ username, password, balance: 1000 }).select('id, username, balance').single();
+      const { data, error } = await supabase
+        .from('users')
+        .insert({ username, password, balance: 1000 })
+        .select('id, username, balance')
+        .single();
       if (error) {
+        console.error('Insert error:', error);
         resultDisplay.textContent = 'Error registering!';
         return;
       }
+      console.log('Registered user:', data);
       resultDisplay.textContent = 'Registered! Welcome gift: 1000 coins! 🎁';
       showLogin();
     }
@@ -526,7 +547,10 @@
     // Market öğelerini başlat
     async function initMarket() {
       const { data: marketItems, error } = await supabase.from('market_items').select('id');
-      if (error) return console.error('Error checking market items:', error);
+      if (error) {
+        console.error('Error checking market items:', error);
+        return;
+      }
       if (!marketItems.length) {
         const initialItems = [
           { id: 'theme1', name: 'Dark Theme', price: 500 },
@@ -535,7 +559,8 @@
           { id: 'coinPack', name: '1000 Coins', price: 200 },
           { id: 'vipTheme', name: 'VIP Theme', price: 1000 },
         ];
-        await supabase.from('market_items').insert(initialItems);
+        const { error: insertError } = await supabase.from('market_items').insert(initialItems);
+        if (insertError) console.error('Error inserting market items:', insertError);
       }
       populateMarket();
     }
