@@ -1,256 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kyros Spins - Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      background: linear-gradient(to bottom, #1a202c, #2d3748);
-      color: #e2e8f0;
-      font-family: 'Arial', sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-content {
-      background: #2d3748;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 500px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-    input, select {
-      background: #4a5568;
-      color: #e2e8f0;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      margin: 10px 0;
-      width: 100%;
-    }
-    button {
-      background: #ed8936;
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #dd6b20;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyrosil 10 Million Followers Celebration!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Set main font to Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
 </head>
-<body>
-  <div id="admin-login" class="modal" style="display: flex;">
-    <div class="modal-content">
-      <h2 class="text-2xl font-bold mb-4">Admin Login</h2>
-      <input id="admin-password" type="password" placeholder="Enter password">
-      <button onclick="loginAdmin()">Login</button>
-    </div>
-  </div>
+<body class="bg-gray-100 py-12 sm:py-20 px-4">
 
-  <div id="admin-panel" class="container mx-auto p-6 hidden">
-    <h1 class="text-4xl font-bold mb-6 text-center">Kyros Spins - Admin Panel</h1>
-    <div class="bg-gray-700 p-6 rounded-lg mb-6">
-      <h2 class="text-2xl font-bold mb-4">Add Coins to User</h2>
-      <select id="user-select"></select>
-      <input id="add-coins" type="number" placeholder="Coin Amount">
-      <button onclick="addCoins()">Add Coins</button>
-    </div>
-    <div class="bg-gray-700 p-6 rounded-lg mb-6">
-      <h2 class="text-2xl font-bold mb-4">Generate Promo Code</h2>
-      <input id="promo-amount" type="number" placeholder="Coin Amount">
-      <input id="promo-usage-limit" type="number" placeholder="Usage Limit">
-      <button onclick="generatePromoCode()">Generate</button>
-      <p id="promo-result" class="mt-2"></p>
-      <h3 class="mt-4">Promo Code Usage</h3>
-      <div id="promo-list" class="mt-2"></div>
-    </div>
-    <div class="bg-gray-700 p-6 rounded-lg">
-      <h2 class="text-2xl font-bold mb-4">Manage Market</h2>
-      <input id="item-name" type="text" placeholder="Item Name">
-      <input id="item-price" type="number" placeholder="Price">
-      <button onclick="addMarketItem()">Add Item</button>
-      <div id="market-list" class="mt-4"></div>
-    </div>
-    <button onclick="logoutAdmin()" class="mt-6">Logout</button>
-  </div>
+    <!-- Main Content Container -->
+    <main class="max-w-3xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden">
+        
+        <!-- Header Section -->
+        <header class="p-8 sm:p-10 bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-center">
+            <!-- FIX: Logo made small, round, and proportional -->
+            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png" alt="Kyrosil Logo" class="mx-auto mb-6 h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover filter brightness-0 invert">
+            
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                We are Europe's 5th Largest Community!
+            </h1>
+            
+            <p class="mt-4 text-lg text-blue-100 max-w-2xl mx-auto">
+                Kyrosil has reached 10 Million followers on the EU Portal, surpassing the European Parliament.
+            </p>
+            
+            <p class="mt-6 text-sm text-blue-200 font-medium">
+                This grand achievement was made possible by your support. Thank you, Europe!
+            </p>
+        </header>
 
-  <script>
-    const supabase = Supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
-    const adminPassword = 'kyros123';
-    let isAdmin = false;
+        <!-- Giveaway Festival Content -->
+        <section class="p-6 sm:p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    Today, <span class="text-blue-600">kyrosil.eu</span> is a Festival Ground!
+                </h2>
+                
+                <p class="mt-2 text-gray-600">
+                    Surprise gifts all day long from our giant sponsors are waiting for you!
+                </p>
+            </div>
 
-    async function loginAdmin() {
-      const password = document.getElementById('admin-password').value;
-      if (password === adminPassword) {
-        isAdmin = true;
-        document.getElementById('admin-login').style.display = 'none';
-        document.getElementById('admin-panel').classList.remove('hidden');
-        populateUserSelect();
-        populateMarketList();
-        populatePromoList();
-        // Canlı senkronizasyon için abonelik
-        supabase
-          .channel('users')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => populateUserSelect())
-          .subscribe();
-        supabase
-          .channel('market_items')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'market_items' }, () => populateMarketList())
-          .subscribe();
-        supabase
-          .channel('promo_codes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'promo_codes' }, () => populatePromoList())
-          .subscribe();
-      } else {
-        document.getElementById('admin-password').value = '';
-        alert('Wrong password!');
-      }
-    }
+            <!-- Festival Schedule Title -->
+            <h3 class="text-lg sm:text-xl font-bold text-indigo-700 border-b-2 border-indigo-100 pb-3 mb-6">
+                Festival Schedule
+            </h3>
 
-    function logoutAdmin() {
-      isAdmin = false;
-      document.getElementById('admin-panel').classList.add('hidden');
-      document.getElementById('admin-login').style.display = 'flex';
-    }
+            <!-- Giveaway List (More Compact) -->
+            <ol class="space-y-8">
 
-    async function populateUserSelect() {
-      const select = document.getElementById('user-select');
-      const { data: users, error } = await supabase.from('users').select('id, username, balance');
-      if (error) return alert('Error: ' + error.message);
-      select.innerHTML = '<option value="">Select User</option>';
-      users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.id;
-        option.textContent = `${user.username} (${user.balance} coins)`;
-        select.appendChild(option);
-      });
-    }
+                <!-- 13.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">13.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center flex-wrap">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-5.png" alt="Coca-Cola" class="h-8 w-auto">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-3.png" alt="Nestlé" class="h-8 w-auto">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-10.png" alt="Unilever" class="h-8 w-auto">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-17.png" alt="Carrefour" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            Carrefour Card points worth 20 € or 750 ₺ (no minimum) for 1,000 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    async function addCoins() {
-      const userId = document.getElementById('user-select').value;
-      const amount = parseInt(document.getElementById('add-coins').value);
-      if (userId && amount > 0) {
-        const { data: user, error } = await supabase
-          .from('users')
-          .select('balance')
-          .eq('id', userId)
-          .single();
-        if (error) return alert('Error: ' + error.message);
-        await supabase
-          .from('users')
-          .update({ balance: user.balance + amount })
-          .eq('id', userId);
-        alert(`Added ${amount} coins to user!`);
-        document.getElementById('add-coins').value = '';
-      } else {
-        alert('Select a user and enter a valid amount!');
-      }
-    }
+                <!-- 14.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">14.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-7.png" alt="Starbucks" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            20 € or 750 ₺ Starbucks Mobile Wallet balance for 1,000 people!
+                        </p>
+                    </div>
+                </li>
 
-    async function generatePromoCode() {
-      const amount = parseInt(document.getElementById('promo-amount').value);
-      const usageLimit = parseInt(document.getElementById('promo-usage-limit').value);
-      if (amount > 0 && usageLimit > 0) {
-        const code = 'PROMO-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-        const { error } = await supabase.from('promo_codes').insert({
-          code,
-          amount,
-          usage_limit,
-          used_by: []
-        });
-        if (error) return alert('Error: ' + error.message);
-        document.getElementById('promo-result').textContent = `Promo Code: ${code} (${amount} coins, ${usageLimit} uses)`;
-        populatePromoList();
-      } else {
-        alert('Enter valid amount and usage limit!');
-      }
-    }
+                <!-- 15.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">15.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-4.png" alt="Swiss Air" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            One-way intra-Europe economy class award ticket for 250 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    async function populatePromoList() {
-      const promoList = document.getElementById('promo-list');
-      const { data: promos, error } = await supabase.from('promo_codes').select('code, amount, usage_limit, used_by');
-      if (error) return alert('Error: ' + error.message);
-      promoList.innerHTML = '';
-      promos.forEach(promo => {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between bg-gray-600 p-2 rounded mb-2';
-        div.innerHTML = `
-          ${promo.code} - ${promo.amount} coins, ${promo.used_by.length}/${promo.usage_limit} used
-          <button onclick="deletePromoCode('${promo.code}')" class="bg-red-500 px-2 py-1 rounded">Delete</button>
-        `;
-        promoList.appendChild(div);
-      });
-    }
+                <!-- 16.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">16.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://www.marefa.org/w/images/thumb/0/0f/Aegean_Airlines_Logo_2020.svg/1200px-Aegean_Airlines_Logo_2020.svg.png" alt="Aegean Airlines" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            One-way intra-Europe economy class award ticket for 750 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    async function deletePromoCode(code) {
-      const { error } = await supabase.from('promo_codes').delete().eq('code', code);
-      if (error) return alert('Error: ' + error.message);
-      populatePromoList();
-    }
+                <!-- 17.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">17.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://www.airport-suppliers.com/wp-content/uploads/2019/11/Istanbul-Airport-Logo.png" alt="İstanbul Havalimanı (İGA)" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            1-day IGA PASS & Greet service for 500 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
+                
+                <!-- 18.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">18.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-1.png" alt="Burger King" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            2 Whopper Menus for 1,000 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Valid on App or Tıkla Gelsin)</p>
+                    </div>
+                </li>
+                
+                <!-- 19.00 -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-blue-600">19.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-gray-100 pl-4 sm:pl-6">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-11.png" alt="Mavi" class="h-8 w-auto">
+                        </div>
+                        <p class="text-base font-semibold text-gray-800">
+                            1,000 ₺ Mavi Kartuş Points for 300 people!
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    async function populateMarketList() {
-      const marketList = document.getElementById('market-list');
-      const { data: marketItems, error } = await supabase.from('market_items').select('id, name, price');
-      if (error) return alert('Error: ' + error.message);
-      marketList.innerHTML = '';
-      marketItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between bg-gray-600 p-2 rounded mb-2';
-        div.innerHTML = `
-          ${item.name} - ${item.price} coins
-          <button onclick="deleteMarketItem('${item.id}')" class="bg-red-500 px-2 py-1 rounded">Delete</button>
-        `;
-        marketList.appendChild(div);
-      });
-    }
+                <!-- 20.00 BONUS -->
+                <li class="flex items-start space-x-4 sm:space-x-6">
+                    <div class="flex-shrink-0 w-24 sm:w-32 text-left">
+                        <time class="text-xl sm:text-2xl font-extrabold text-orange-500">20.00</time>
+                        <span class="ml-1 sm:ml-2 text-sm font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="flex-1 border-l-4 border-orange-200 pl-4 sm:pl-6">
+                        <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white p-5 rounded-lg shadow-lg">
+                            <h4 class="text-xl font-bold">BONUS & SURPRISE!</h4>
+                            <p class="mt-1 text-sm">Stay tuned for the biggest surprise of the day!</p>
+                        </div>
+                    </div>
+                </li>
 
-    async function addMarketItem() {
-      const name = document.getElementById('item-name').value;
-      const price = parseInt(document.getElementById('item-price').value);
-      if (name && price > 0) {
-        const id = name.toLowerCase().replace(/\s/g, '');
-        const { error } = await supabase.from('market_items').insert({ id, name, price });
-        if (error) return alert('Error: ' + error.message);
-        populateMarketList();
-        document.getElementById('item-name').value = '';
-        document.getElementById('item-price').value = '';
-      } else {
-        alert('Enter valid name and price!');
-      }
-    }
+            </ol>
+            
+            <!-- Closing / CTA -->
+            <footer class="mt-10 pt-6 border-t border-gray-200 text-center">
+                <p class="text-base font-semibold text-gray-800">
+                    Today at kyrosil.eu, you'll be showered with gifts!
+                </p>
+                
+                <p class="mt-2 text-sm text-gray-600">
+                    Take your places and let's enjoy being Europe's 5th largest community together!
+                </p>
+            </footer>
 
-    async function deleteMarketItem(itemId) {
-      const { error } = await supabase.from('market_items').delete().eq('id', itemId);
-      if (error) return alert('Error: ' + error.message);
-      populateMarketList();
-    }
+        </section>
+    </main>
 
-    // Initialize
-    populateUserSelect();
-    populateMarketList();
-    populatePromoList();
-  </script>
 </body>
 </html>
