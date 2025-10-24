@@ -1,570 +1,339 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kyros Spins</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <!-- Tailwind CDN (Geliştirme için, üretimde Tailwind CLI kullan: https://tailwindcss.com/docs/installation) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      background: linear-gradient(to bottom, #1a202c, #2d3748);
-      color: #e2e8f0;
-      font-family: 'Arial', sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      overflow-x: hidden;
-    }
-    .slot-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 120px);
-      gap: 8px;
-      background: #2d3748;
-      padding: 15px;
-      border-radius: 12px;
-      border: 3px solid #ed8936;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-    .slot-cell {
-      width: 120px;
-      height: 120px;
-      background: #4a5568;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.2s;
-    }
-    .slot-cell img {
-      width: 100px;
-      height: 100px;
-      object-fit: contain;
-    }
-    .slot-cell.winning {
-      transform: scale(1.1);
-      box-shadow: 0 0 20px #ed8936;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .tab-button {
-      background: #4a5568;
-      color: #e2e8f0;
-      padding: 10px 20px;
-      border-radius: 8px 8px 0 0;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .tab-button.active {
-      background: #ed8936;
-      color: white;
-    }
-    .tab-button:hover {
-      background: #dd6b20;
-    }
-    button {
-      background: #ed8936;
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #dd6b20;
-    }
-    button:disabled {
-      background: #718096;
-      cursor: not-allowed;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #2d3748;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-    input {
-      background: #4a5568;
-      color: #e2e8f0;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      margin: 10px 0;
-      width: 100%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyrosil 10 Milyon Takipçi Kutlaması!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Ana font ailesini Inter olarak ayarla */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Aktif olmayan dil butonu */
+        .lang-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Aktif dil butonu stilleri */
+        .lang-btn.active {
+            font-weight: 700;
+        }
+    </style>
 </head>
-<body>
-  <div id="login-modal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-2xl font-bold mb-4">Kyros Spins</h2>
-      <input id="username" type="text" placeholder="Username">
-      <input id="password" type="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-      <button onclick="showRegister()">Register</button>
-    </div>
-  </div>
+<body class="bg-gray-100 py-12 sm:py-20 px-4">
 
-  <div id="register-modal" class="modal">
-    <div class="modal-content">
-      <h2 class="text-2xl font-bold mb-4">Register</h2>
-      <input id="reg-username" type="text" placeholder="Username">
-      <input id="reg-password" type="password" placeholder="Password">
-      <button onclick="register()">Register</button>
-      <button onclick="showLogin()">Back to Login</button>
-    </div>
-  </div>
+    <!-- Ana İçerik Konteyneri -->
+    <main class="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden">
+        
+        <!-- Başlık Alanı -->
+        <header class="p-8 sm:p-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-center">
+            <!-- KULLANICI NOTU: Buradaki 'src' linkini kendi Kyrosil logonuzla değiştirin -->
+            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png">
+            
+            <h1 lang="tr" class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Avrupa’nın En Büyük 5. Topluluğuyuz!
+            </h1>
+            <h1 lang="en" class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                We are Europe's 5th Largest Community!
+            </h1>
+            
+            <p lang="tr" class="mt-4 text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto">
+                Kyrosil, EU Portal'da 10 Milyon takipçiye ulaşarak Avrupa Parlamentosu’nu geride bıraktı.
+            </p>
+            <p lang="en" class="mt-4 text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto">
+                Kyrosil has reached 10 Million followers on the EU Portal, surpassing the European Parliament.
+            </p>
+            
+            <p lang="tr" class="mt-6 text-base text-blue-200 font-semibold">
+                Bu büyük başarı, sizlerin desteğiyle mümkün oldu. Teşekkürler Avrupa!
+            </p>
+            <p lang="en" class="mt-6 text-base text-blue-200 font-semibold">
+                This grand achievement was made possible by your support. Thank you, Europe!
+            </p>
+        </header>
 
-  <div id="game-container" class="container mx-auto p-6 hidden">
-    <h1 class="text-5xl font-bold mb-6 text-center">Kyros Spins</h1>
-    <p class="text-lg mb-4">Welcome, <span id="username-display"></span>!</p>
-    <p class="text-lg mb-4">Balance: <span id="balance">1000</span> coins</p>
-    <div class="flex justify-center mb-4">
-      <button class="tab-button active" onclick="showTab('game')">Game</button>
-      <button class="tab-button" onclick="showTab('market')">Market</button>
-      <button class="tab-button" onclick="showTab('paytable')">Paytable</button>
-    </div>
+        <!-- Dil Değiştirici -->
+        <nav class="flex justify-end gap-1 p-4 bg-gray-50 border-b border-gray-200">
+            <button id="btn-tr" class="lang-btn active text-blue-600 px-3 py-1 rounded-md text-sm" onclick="switchLang('tr')">
+                Türkçe (TR)
+            </button>
+            <button id="btn-en" class="lang-btn text-gray-500 hover:text-blue-600 px-3 py-1 rounded-md text-sm" onclick="switchLang('en')">
+                English (EN)
+            </button>
+        </nav>
 
-    <div id="game" class="tab-content active">
-      <div class="mb-4 text-center">
-        <p>Bet: <span id="bet-amount">1</span> coin</p>
-      </div>
-      <div class="slot-grid" id="slot-grid">
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-        <div class="slot-cell"><img src="images/placeholder.png" alt="slot"></div>
-      </div>
-      <div class="flex justify-center gap-4 mt-6">
-        <button onclick="decreaseBet()">- Bet</button>
-        <button onclick="increaseBet()">+ Bet</button>
-        <button id="spin-btn" onclick="spin()">Spin</button>
-        <button id="lucky-spin-btn" onclick="luckySpin()">Lucky Spin (10x)</button>
-      </div>
-      <p id="result" class="mt-6 text-xl text-center"></p>
-    </div>
+        <!-- Hediye Festivali İçeriği -->
+        <section class="p-6 sm:p-10">
+            <div class="text-center mb-8">
+                <h2 lang="tr" class="text-2xl font-bold text-gray-800">
+                    Bugün <span class="text-blue-600">kyrosil.eu</span> Bir Festival Alanı!
+                </h2>
+                <h2 lang="en" class="text-2xl font-bold text-gray-800">
+                    Today, <span class="text-blue-600">kyrosil.eu</span> is a Festival Ground!
+                </h2>
+                
+                <p lang="tr" class="mt-2 text-gray-600">
+                    Tam 7 dev sponsorumuzdan gün boyu sürecek sürpriz hediyeler sizleri bekliyor!
+                </p>
+                <p lang="en" class="mt-2 text-gray-600">
+                    Surprise gifts all day long from our 7 giant sponsors are waiting for you!
+                </p>
+            </div>
 
-    <div id="market" class="tab-content">
-      <div class="market-items grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="market-items"></div>
-      <div class="mt-4">
-        <button onclick="showPromoModal()">Use Promo Code</button>
-      </div>
-    </div>
+            <!-- Festival Takvimi Başlığı -->
+            <h3 lang="tr" class="text-xl sm:text-2xl font-bold text-indigo-700 border-b-2 border-indigo-100 pb-3 mb-8">
+                Festival Takvimi
+            </h3>
+            <h3 lang="en" class="text-xl sm:text-2xl font-bold text-indigo-700 border-b-2 border-indigo-100 pb-3 mb-8">
+                Festival Schedule
+            </h3>
 
-    <div id="paytable" class="tab-content">
-      <h2 class="text-2xl font-bold mb-4">Paytable</h2>
-      <div class="bg-gray-700 p-4 rounded-lg">
-        <p class="mb-2">3 Kyrosil: <span class="text-orange-400">1000x</span></p>
-        <p class="mb-2">3 Sponsor1: <span class="text-orange-400">500x</span></p>
-        <p class="mb-2">3 Sponsor2: <span class="text-orange-400">250x</span></p>
-        <p class="mb-2">3 Sponsor3: <span class="text-orange-400">100x</span></p>
-        <p class="mb-2">3 Sponsor4: <span class="text-orange-400">50x</span></p>
-      </div>
-    </div>
+            <!-- Hediye Listesi -->
+            <ol class="space-y-10">
 
-    <div id="promo-modal" class="modal">
-      <div class="modal-content">
-        <h2 class="text-2xl font-bold mb-4">Enter Promo Code</h2>
-        <input id="promo-code" type="text" placeholder="Promo Code">
-        <button onclick="redeemPromo()">Redeem</button>
-        <button onclick="closePromoModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
+                <!-- 13.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">13.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center flex-wrap">
+                            <!-- KULLANICI NOTU: 'src' linklerini logolarınızla değiştirin -->
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-5.png" class="h-8 sm:h-10 w-auto rounded">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-3.png" alt="Nestlé" class="h-8 sm:h-10 w-auto rounded">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-10.png" alt="Unilever" class="h-8 sm:h-10 w-auto rounded">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-17.png" alt="Carrefour" class="h-8 sm:h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            1.000 kişiye 20 € veya 750 ₺ değerinde alt limitsiz Carrefour Card puanı!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            Carrefour Card points worth 20 € or 750 ₺ with no minimum limit for 1,000 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(Form / İlk dolduran)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-  <script>
-    // Supabase başlatma
-    const supabase = window.supabase.createClient('https://vvtojhcirmqkocoffwnb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dG9qaGNpcm1xa29jb2Zmd25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODg4NDIsImV4cCI6MjA2NTg2NDg0Mn0.by4ZCUhfHLpKwSoCQBRP4IZkaiKmDwiB19j7dWtW8X8');
-    let currentUser = null;
-    let balance = 1000;
-    let betAmount = 1;
-    let spinCount = 0;
-    let isSpinning = false;
+                <!-- 14.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">14.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-7.png" alt="Starbucks" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            1.000 kişiye Starbucks Mobile Cüzdan’a yüklenecek 20 € veya 750 ₺ bakiye!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            20 € or 750 ₺ balance to be loaded into Starbucks Mobile Wallet for 1,000 people!
+                        </p>
+                    </div>
+                </li>
 
-    const symbols = [
-      { id: 'kyrosil', src: 'images/kyrosil.png', weight: 5, multiplier: 1000 },
-      { id: 'sponsor1', src: 'images/sponsor1.png', weight: 10, multiplier: 500 },
-      { id: 'sponsor2', src: 'images/sponsor2.png', weight: 15, multiplier: 250 },
-      { id: 'sponsor3', src: 'images/sponsor3.png', weight: 20, multiplier: 100 },
-      { id: 'sponsor4', src: 'images/sponsor4.png', weight: 25, multiplier: 50 },
-      { id: 'empty', src: 'images/empty.png', weight: 50, multiplier: 0 },
-    ];
+                <!-- 15.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">15.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-4.png" alt="Swiss Air" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            250 kişiye Avrupa içi tek yön economy class ödül bileti!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            One-way intra-Europe economy class award ticket for 250 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(Form / İlk dolduran)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    const luckySpinWeights = [
-      { id: 'kyrosil', src: 'images/kyrosil.png', weight: 20, multiplier: 1000 },
-      { id: 'sponsor1', src: 'images/sponsor1.png', weight: 15, multiplier: 500 },
-      { id: 'sponsor2', src: 'images/sponsor2.png', weight: 20, multiplier: 250 },
-      { id: 'sponsor3', src: 'images/sponsor3.png', weight: 25, multiplier: 100 },
-      { id: 'sponsor4', src: 'images/sponsor4.png', weight: 30, multiplier: 50 },
-      { id: 'empty', src: 'images/empty.png', weight: 10, multiplier: 0 },
-    ];
+                <!-- 16.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">16.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://www.marefa.org/w/images/thumb/0/0f/Aegean_Airlines_Logo_2020.svg/1200px-Aegean_Airlines_Logo_2020.svg.png" alt="Aegean Airlines" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            750 kişiye Avrupa içi tek yön economy class ödül bileti!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            One-way intra-Europe economy class award ticket for 750 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(Form / İlk dolduran)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    const grid = Array(9).fill(null);
-    const slotCells = document.querySelectorAll('.slot-cell img');
-    const balanceDisplay = document.getElementById('balance');
-    const betDisplay = document.getElementById('bet-amount');
-    const resultDisplay = document.getElementById('result');
-    const usernameDisplay = document.getElementById('username-display');
-    const spinButton = document.getElementById('spin-btn');
-    const luckySpinButton = document.getElementById('lucky-spin-btn');
-    const marketContainer = document.getElementById('market-items');
+                <!-- 17.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">17.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://www.airport-suppliers.com/wp-content/uploads/2019/11/Istanbul-Airport-Logo.png" alt="İstanbul Havalimanı (İGA)" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            500 kişiye 1 günlük IGA PASS & Greet hizmeti!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            1-day IGA PASS & Greet service for 500 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(Form / İlk dolduran)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
+                
+                <!-- 18.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">18.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-1.png" alt="Burger King" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            1.000 kişiye 2 adet Whopper Menü!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            2 Whopper Menus for 1,000 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(App veya Tıkla Gelsin’de geçerli)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Valid on App or Tıkla Gelsin)</p>
+                    </div>
+                </li>
+                
+                <!-- 19.00 -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-blue-600">19.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-gray-100">
+                        <div class="flex gap-4 mb-3 items-center">
+                            <img src="https://kyrosil.eu/wp-content/uploads/2025/04/image-11.png" alt="Mavi" class="h-10 w-auto rounded">
+                        </div>
+                        <p lang="tr" class="text-lg font-semibold text-gray-800">
+                            300 kişiye 1.000 ₺ Mavi Kartuş Puan!
+                        </p>
+                        <p lang="en" class="text-lg font-semibold text-gray-800">
+                            1,000 ₺ Mavi Kartuş Points for 300 people!
+                        </p>
+                        <p lang="tr" class="text-sm text-gray-500 mt-1">(Form / İlk dolduran)</p>
+                        <p lang="en" class="text-sm text-gray-500 mt-1">(Form / First to fill)</p>
+                    </div>
+                </li>
 
-    async function updateUI() {
-      balanceDisplay.textContent = balance;
-      betDisplay.textContent = betAmount;
-      if (currentUser) {
-        const { error } = await supabase
-          .from('users')
-          .update({ balance })
-          .eq('id', currentUser.id);
-        if (error) console.error('Error updating balance:', error);
-      }
-      spinButton.disabled = isSpinning || balance < betAmount;
-      luckySpinButton.disabled = isSpinning || balance < betAmount * 10;
-    }
+                <!-- 20.00 BONUS -->
+                <li class="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0">
+                    <div class="flex-shrink-0 w-full sm:w-1/4">
+                        <time class="text-2xl font-extrabold text-orange-500">20.00</time>
+                        <span class="ml-2 text-base font-medium text-gray-500">CEST</span>
+                    </div>
+                    <div class="w-full sm:w-3/4 pl-0 sm:pl-8 sm:border-l-4 border-orange-200">
+                        <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white p-6 rounded-lg shadow-lg">
+                            <h4 lang="tr" class="text-2xl font-bold">BONUS & SÜRPRİZ!</h4>
+                            <h4 lang="en" class="text-2xl font-bold">BONUS & SURPRISE!</h4>
+                            <p lang="tr" class="mt-1">Günün en büyük sürprizi için takipte kalın!</p>
+                            <p lang="en" class="mt-1">Stay tuned for the biggest surprise of the day!</p>
+                        </div>
+                    </div>
+                </li>
 
-    function weightedRandom(weights) {
-      const totalWeight = weights.reduce((sum, s) => sum + s.weight, 0);
-      let rand = Math.random() * totalWeight;
-      for (let symbol of weights) {
-        rand -= symbol.weight;
-        if (rand <= 0) return symbol;
-      }
-      return weights[weights.length - 1];
-    }
+            </ol>
+            
+            <!-- Kapanış / CTA -->
+            <footer class="mt-12 pt-8 border-t border-gray-200 text-center">
+                <p lang="tr" class="text-lg font-semibold text-gray-800">
+                    Bugün kyrosil.eu’da hediyeye doyacaksınız!
+                </p>
+                <p lang="en" class="text-lg font-semibold text-gray-800">
+                    Today at kyrosil.eu, you'll be showered with gifts!
+                </p>
+                
+                <p lang="tr" class="mt-2 text-gray-600">
+                    Yerlerinizi alın, formları takip edin, Avrupa’nın en büyük 5. topluluğu olmanın keyfini birlikte çıkaralım!
+                </p>
+                <p lang="en" class="mt-2 text-gray-600">
+                    Take your places, follow the forms, and let's enjoy being Europe's 5th largest community together!
+                </p>
+            </footer>
 
-    async function spin(isLucky = false) {
-      if (isSpinning) return;
-      const cost = isLucky ? betAmount * 10 : betAmount;
-      if (balance < cost) {
-        resultDisplay.textContent = 'Not enough coins! Try the market!';
-        return;
-      }
-      balance -= cost;
-      spinCount++;
-      isSpinning = true;
-      updateUI();
-
-      const weights = isLucky ? luckySpinWeights : symbols;
-      gsap.to(slotCells, {
-        y: 100,
-        duration: 0.5,
-        stagger: 0.1,
-        onComplete: async () => {
-          grid.forEach((_, i) => {
-            const symbol = weightedRandom(weights);
-            grid[i] = symbol;
-            slotCells[i].src = symbol.src;
-            slotCells[i].alt = symbol.id;
-            slotCells[i].parentElement.classList.remove('winning');
-          });
-          gsap.fromTo(slotCells, { y: -100 }, { y: 0, duration: 0.5, stagger: 0.1 });
-          const { error } = await supabase.from('spins').insert({
-            user_id: currentUser.id,
-            spin_type: isLucky ? 'lucky' : 'normal',
-            result: JSON.stringify(grid.map(s => s.id)),
-            timestamp: new Date()
-          });
-          if (error) console.error('Error logging spin:', error);
-          checkWin();
-          checkGift();
-          isSpinning = false;
-          updateUI();
-        },
-      });
-    }
-
-    async function luckySpin() {
-      spin(true);
-    }
-
-    async function checkWin() {
-      const lines = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-      ];
-      let winnings = 0;
-      let winningLines = [];
-      for (let line of lines) {
-        const [a, b, c] = line;
-        if (grid[a]?.id === grid[b]?.id && grid[b]?.id === grid[c]?.id && grid[a].multiplier > 0) {
-          winnings += betAmount * grid[a].multiplier;
-          winningLines.push(line);
+        </section>
+    </main>
+    
+    <script>
+        // Dil değiştirme fonksiyonu
+        function switchLang(lang) {
+            // Tüm dil elementlerini seç
+            const trElements = document.querySelectorAll('[lang="tr"]');
+            const enElements = document.querySelectorAll('[lang="en"]');
+            
+            // Butonları seç
+            const btnTr = document.getElementById('btn-tr');
+            const btnEn = document.getElementById('btn-en');
+            
+            if (lang === 'en') {
+                // İngilizce'yi göster
+                trElements.forEach(el => el.style.display = 'none');
+                enElements.forEach(el => el.style.display = 'block');
+                
+                // Buton stillerini ayarla
+                btnTr.classList.remove('active', 'text-blue-600');
+                btnTr.classList.add('text-gray-500', 'hover:text-blue-600');
+                btnEn.classList.add('active', 'text-blue-600');
+                btnEn.classList.remove('text-gray-500', 'hover:text-blue-600');
+                
+                // HTML lang attribute'unu güncelle
+                document.documentElement.lang = 'en';
+                
+            } else {
+                // Türkçe'yi göster
+                trElements.forEach(el => el.style.display = 'block');
+                enElements.forEach(el => el.style.display = 'none');
+                
+                // Buton stillerini ayarla
+                btnEn.classList.remove('active', 'text-blue-600');
+                btnEn.classList.add('text-gray-500', 'hover:text-blue-600');
+                btnTr.classList.add('active', 'text-blue-600');
+                btnTr.classList.remove('text-gray-500', 'hover:text-blue-600');
+                
+                // HTML lang attribute'unu güncelle
+                document.documentElement.lang = 'tr';
+            }
         }
-      }
-      if (winnings > 0) {
-        balance += winnings;
-        winningLines.forEach(line => {
-          line.forEach(cell => {
-            gsap.to(slotCells[cell].parentElement, {
-              scale: 1.1,
-              duration: 0.3,
-              yoyo: true,
-              repeat: 3,
-              onStart: () => slotCells[cell].parentElement.classList.add('winning'),
-            });
-          });
+        
+        // Sayfa yüklendiğinde varsayılan dili (Türkçe) ayarla
+        document.addEventListener('DOMContentLoaded', () => {
+            switchLang('tr');
         });
-        resultDisplay.textContent = `Jackpot! You won ${winnings} coins! 🎉`;
-      } else {
-        resultDisplay.textContent = 'Spin again for glory!';
-      }
-      updateUI();
-    }
+    </script>
 
-    async function checkGift() {
-      if (spinCount % 10 === 0) {
-        const gift = Math.random() < 0.5 ? 10 : 1;
-        if (gift === 1) {
-          resultDisplay.textContent = 'Surprise! Free Lucky Spin! 🎁';
-          luckySpin();
-        } else {
-          balance += gift;
-          resultDisplay.textContent = `Gift! You got ${gift} coins! 🎁`;
-          updateUI();
-        }
-      }
-    }
-
-    function increaseBet() {
-      if (betAmount < 100) betAmount += 1;
-      updateUI();
-    }
-
-    function decreaseBet() {
-      if (betAmount > 1) betAmount -= 1;
-      updateUI();
-    }
-
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
-    }
-
-    async function populateMarket() {
-      const { data: marketItems, error } = await supabase.from('market_items').select('id, name, price');
-      if (error) {
-        console.error('Error fetching market items:', error);
-        return;
-      }
-      marketContainer.innerHTML = '';
-      marketItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'market-item bg-gray-700 p-4 rounded-lg';
-        div.innerHTML = `
-          <h3 class="font-bold">${item.name}</h3>
-          <p>${item.price} coins</p>
-          <button onclick="buyItem('${item.id}', ${item.price})">Buy</button>
-        `;
-        marketContainer.appendChild(div);
-      });
-    }
-
-    async function buyItem(itemId, price) {
-      if (balance < price) {
-        resultDisplay.textContent = 'Not enough coins! Spin to earn more!';
-        return;
-      }
-      balance -= price;
-      const { error } = await supabase.from('purchases').insert({
-        user_id: currentUser.id,
-        item_id: itemId,
-        price,
-        timestamp: new Date()
-      });
-      if (error) console.error('Error logging purchase:', error);
-      resultDisplay.textContent = `Purchased ${itemId}! Awesome choice!`;
-      updateUI();
-      if (itemId === 'luckySpin') {
-        showTab('game');
-        luckySpin();
-      } else if (itemId.includes('theme')) {
-        document.body.style.background = itemId === 'theme1' ? 'linear-gradient(to bottom, #1a202c, #2d3748)' :
-                                        itemId === 'theme2' ? 'linear-gradient(to bottom, #f7fafc, #e2e8f0)' :
-                                        'linear-gradient(to bottom, #4a5568, #2d3748)';
-      } else if (itemId === 'coinPack') {
-        balance += 1000;
-        resultDisplay.textContent = 'Coin Pack purchased! +1000 coins! 🚀';
-        updateUI();
-      }
-    }
-
-    function showPromoModal() {
-      document.getElementById('promo-modal').style.display = 'flex';
-    }
-
-    function closePromoModal() {
-      document.getElementById('promo-modal').style.display = 'none';
-    }
-
-    async function redeemPromo() {
-      const code = document.getElementById('promo-code').value;
-      const { data: promo, error } = await supabase
-        .from('promo_codes')
-        .select('id, amount, usage_limit, used_by')
-        .eq('code', code)
-        .single();
-      if (error || !promo) {
-        console.error('Error fetching promo:', error);
-        resultDisplay.textContent = 'Invalid promo code!';
-        return;
-      }
-      if (promo.used_by.length >= promo.usage_limit) {
-        resultDisplay.textContent = 'Promo code usage limit reached!';
-        return;
-      }
-      if (promo.used_by.includes(currentUser.id)) {
-        resultDisplay.textContent = 'You already used this promo code!';
-        return;
-      }
-      balance += promo.amount;
-      const { error: updateError } = await supabase
-        .from('promo_codes')
-        .update({ used_by: [...promo.used_by, currentUser.id] })
-        .eq('id', promo.id);
-      if (updateError) console.error('Error updating promo:', updateError);
-      resultDisplay.textContent = `Redeemed ${code} for ${promo.amount} coins! 🎉`;
-      updateUI();
-      closePromoModal();
-    }
-
-    function showLogin() {
-      document.getElementById('register-modal').style.display = 'none';
-      document.getElementById('login-modal').style.display = 'flex';
-    }
-
-    function showRegister() {
-      document.getElementById('login-modal').style.display = 'none';
-      document.getElementById('register-modal').style.display = 'flex';
-    }
-
-    async function login() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      console.log('Logging in user:', username);
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('id, username, password, balance')
-        .eq('username', username)
-        .single();
-      if (error) {
-        console.error('Login error:', error);
-        resultDisplay.textContent = 'Invalid username or password!';
-        return;
-      }
-      if (!user || user.password !== password) {
-        resultDisplay.textContent = 'Invalid username or password!';
-        return;
-      }
-      currentUser = { id: user.id, username: user.username };
-      balance = user.balance;
-      usernameDisplay.textContent = user.username;
-      document.getElementById('login-modal').style.display = 'none';
-      document.getElementById('game-container').classList.remove('hidden');
-      updateUI();
-      populateMarket();
-      if (localStorage.getItem('triggerLuckySpin') === 'true') {
-        localStorage.removeItem('triggerLuckySpin');
-        showTab('game');
-        luckySpin();
-      }
-      // Canlı senkronizasyon
-      supabase
-        .channel('users')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${user.id}` }, payload => {
-          balance = payload.new.balance;
-          updateUI();
-        })
-        .subscribe();
-    }
-
-    async function register() {
-      const username = document.getElementById('reg-username').value;
-      const password = document.getElementById('reg-password').value;
-      console.log('Registering user:', username);
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('username', username)
-        .single();
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Check error:', checkError);
-        resultDisplay.textContent = 'Error checking username!';
-        return;
-      }
-      if (existingUser) {
-        resultDisplay.textContent = 'Username already exists!';
-        return;
-      }
-      const { data, error } = await supabase
-        .from('users')
-        .insert({ username, password, balance: 1000 })
-        .select('id, username, balance')
-        .single();
-      if (error) {
-        console.error('Insert error:', error);
-        resultDisplay.textContent = 'Error registering!';
-        return;
-      }
-      console.log('Registered user:', data);
-      resultDisplay.textContent = 'Registered! Welcome gift: 1000 coins! 🎁';
-      showLogin();
-    }
-
-    // Initialize
-    document.getElementById('login-modal').style.display = 'flex';
-    updateUI();
-    // Market öğelerini başlat
-    async function initMarket() {
-      const { data: marketItems, error } = await supabase.from('market_items').select('id');
-      if (error) {
-        console.error('Error checking market items:', error);
-        return;
-      }
-      if (!marketItems.length) {
-        const initialItems = [
-          { id: 'theme1', name: 'Dark Theme', price: 500 },
-          { id: 'theme2', name: 'Light Theme', price: 500 },
-          { id: 'luckySpin', name: 'Extra Lucky Spin', price: 100 },
-          { id: 'coinPack', name: '1000 Coins', price: 200 },
-          { id: 'vipTheme', name: 'VIP Theme', price: 1000 },
-        ];
-        const { error: insertError } = await supabase.from('market_items').insert(initialItems);
-        if (insertError) console.error('Error inserting market items:', insertError);
-      }
-      populateMarket();
-    }
-    initMarket();
-  </script>
 </body>
 </html>
